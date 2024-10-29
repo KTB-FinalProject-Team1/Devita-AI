@@ -79,7 +79,6 @@ pipeline {
                     sshagent(['back_PEM']) {
                         sh '''
                         ssh -t -o StrictHostKeyChecking=no ubuntu@10.0.2.211 << EOF
-                        echo "Test"
                         export AWS_REGION='$AWS_REGION'
                         export ECR_REGISTRY='$ECR_REGISTRY'
                         export ECR_REPO_NAME='$ECR_REPO_NAME'
