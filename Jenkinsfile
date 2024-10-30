@@ -16,7 +16,6 @@ pipeline {
                     // 현재 Job에서 실행 중인 이전 빌드를 가져옴
                     def job = Jenkins.instance.getItemByFullName(env.JOB_NAME)
                     def currentBuildNumber = currentBuild.number
-                    
                     // 이전 빌드가 실행 중이면 중단시킴
                     job.builds.each { build ->
                         if (build.isBuilding() && build.number < currentBuildNumber) {
