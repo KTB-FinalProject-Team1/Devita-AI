@@ -237,7 +237,7 @@ def mission_generator_daily(_client, sub_categories: list[str]):
                 예시 1: Dockerfile을 작성하여 Python 애플리케이션을 컨테이너화하고 이미지를 빌드 및 실행하시오.
                 예시 2: Docker CLI를 사용하여 간단한 Nginx 컨테이너를 실행하고 로컬에서 접근하시오.
                 """)
-            prompt_descriptions.append("도구의 사용법과 주요 기능을 실습하는 미션")
+            prompt_descriptions.append("도구의 사용법과 주요 기능을 실습하는 미션.")
 
     # 랜덤하게 하나의 카테고리 선택
     selected_idx = random.randint(0, len(sub_categories) - 1)
