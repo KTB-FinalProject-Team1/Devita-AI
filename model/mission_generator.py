@@ -133,6 +133,7 @@ def mission_generator_free(_client, sub_category: str) -> list[str]:
         max_tokens=300,
         temperature=1.0,
         top_p=0.95,
+        presence_penalty=0.1,
         response_format={"type": "json_object"}
     )
 
@@ -273,6 +274,7 @@ def mission_generator_daily(_client, sub_categories: list[str]):
         max_tokens=100,
         temperature=1.2,
         top_p=0.95,
+        presence_penalty=0.1,
         response_format={"type": "text"}
     )
 
