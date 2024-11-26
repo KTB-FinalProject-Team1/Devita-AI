@@ -18,8 +18,6 @@ def mission_generator_free(_client, sub_category: str) -> list[str]:
         else:
             raise ValueError(f"지원하지 않는 카테고리입니다: {sub_category}")
 
-    main_category = determine_main_category(sub_category)
-
     def generate_mission_prompt(main_category, sub_category):
         if main_category == "cs":
             if sub_category == "네트워크":
@@ -119,6 +117,8 @@ def mission_generator_free(_client, sub_category: str) -> list[str]:
         }
 
         return prompt
+
+    main_category = determine_main_category(sub_category)
 
     # 프롬프트 생성
     prompt = generate_mission_prompt(main_category.lower(), sub_category)

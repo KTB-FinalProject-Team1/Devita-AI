@@ -11,7 +11,7 @@ class Service:
 
     def daily(
             self,
-            userId: str,
+            userId: int,
             categories: list[str]
     ) -> str:
         mission = self.repo.daily(userId, categories)
@@ -19,7 +19,7 @@ class Service:
 
     def autonomous(
             self,
-            userId: str,
+            userId: int,
             subCategory: str
     ) -> list[str]:
         missions = self.repo.autonomous(userId, subCategory)
