@@ -1,7 +1,6 @@
 import os
-import openai
-from openai import OpenAI
 from dotenv import load_dotenv
+from langchain.chat_models import ChatOpenAI
 
 
 class LLMManager:
@@ -14,6 +13,9 @@ class LLMManager:
             cls._instance = cls()
         return cls._instance
 
+    def get_client(self):
+        return self._client
+
     def __init__(self):
         if LLMManager._instance is not None:
             raise Exception("This class is a singleton!")
@@ -24,9 +26,13 @@ class LLMManager:
         if self._client is None:
             try:
                 load_dotenv()
-
-                openai.api_key = os.getenv("OPENAI_API_KEY")
-                self._client = OpenAI()
+                self._client = ChatOpenAI(
+                    model_name="gpt-4o-mini",  # 모델 이름
+                    temperature=1.0,          # 생성 텍스트 다양성
+                    frequency_penalty=1.0,  # 반복 사용 단어에 페널티
+                    presence_penalty=1.0,   # 새 단어 선호
+                    openai_api_key=os.getenv("OPENAI_API_KEY")
+                )
 
             except Exception as e:
                 print(f"Error loading model: {str(e)}")
