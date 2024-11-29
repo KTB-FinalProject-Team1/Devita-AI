@@ -3,7 +3,7 @@ from model.llm import LLMManager
 from api.interface.controllers.model.model import Mission
 import json
 
-from model.mission_generator import mission_generator_free_langchain, mission_generator_daily
+from model.mission_generator import mission_generator_free_langchain, mission_generator_daily_langchain
 
 
 class Repository(IRepository):
@@ -12,9 +12,7 @@ class Repository(IRepository):
             userId: int,
             categories: list[str]
     ) -> str:
-        l = LLMManager.get_instance()
-        res = mission_generator_daily(l._client, categories)
-        print(str(res))
+        res = mission_generator_daily_langchain(categories)
         return res
 
     def autonomous(
