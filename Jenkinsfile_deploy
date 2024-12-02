@@ -31,7 +31,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    git branch: 'develop', url: 'https://github.com/KTB-FinalProject-Team1/Devita-AI', credentialsId: "githubAccessToken"
+                    git branch: 'main', url: 'https://github.com/KTB-FinalProject-Team1/Devita-AI', credentialsId: "githubAccessToken"
                 }
             }
         }
