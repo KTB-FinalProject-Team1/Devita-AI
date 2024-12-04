@@ -190,7 +190,7 @@ def mission_generator_free_langchain(sub_category: str):
                     높은 난이도: 병행 제어를 위해 다중 버전 동시성 제어(MVCC) 알고리즘을 구현하고 성능과 데이터 일관성 분석을 수행하시오.
                     중간 난이도: B+ 트리 인덱스를 이용해 효율적인 데이터 검색 알고리즘을 설계하시오.
                     쉬운 난이도: 관계 대수의 기본 연산을 사용하여 간단한 SQL 쿼리를 관계 대수로 변환하시오.
-                    """,
+                    """
         prompt_description = "심화된 대학교 전공 수준의 개념 이해와 분석 능력을 테스트할 수 있는 미션"
 
     elif main_category == "language":
@@ -277,7 +277,7 @@ def mission_generator_free_langchain(sub_category: str):
             ("human", """
         질문: {main_category} 안에 {sub_category}를 바탕으로 개발자를 위한 높은 난이도, 중간 난이도, 쉬운 난이도 {prompt_description}을 생성하시오.
         답:
-        """),
+        """)
         ]
     )
     messages = chat_template.format_messages(
