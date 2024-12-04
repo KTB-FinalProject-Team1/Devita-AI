@@ -1,7 +1,11 @@
 import json
 import random
-from langchain.prompts import PromptTemplate, ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate
 from model.llm import LLMManager
+from langchain_community.document_loaders import TextLoader
+from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_chroma import Chroma
 
 
 _cs_categories = ("DATA_STRUCTURE", "ALGORITHM", "COMPUTER_ARCHITECTURE", "NETWORK", "OPERATING_SYSTEM",
@@ -9,140 +13,12 @@ _cs_categories = ("DATA_STRUCTURE", "ALGORITHM", "COMPUTER_ARCHITECTURE", "NETWO
 _language_categories = ("JAVA", "JAVASCRIPT", "PYTHON")
 _tool_categories = ("SPRING", "REACT", "PYTORCH", "DOCKER")
 
-
-def mission_generator_daily(_client, sub_categories: list[str]):
-    # main_category를 sub_category에 따라 자동 지정
-    for category in sub_categories:
-        if category not in _cs_categories + _language_categories + _tool_categories:
-            raise ValueError(f"올바른 sub_category를 입력하세요. 잘못된 카테고리: {category}")
-
-    category_mapping = {}
-    example_texts = []
-    prompt_descriptions = []
-
-    for sub_category in sub_categories:
-        if sub_category in _cs_categories:
-            category_mapping[sub_category] = "CS"
-            if sub_category == "DATA_STRUCTURE":
-                example_texts.append("""
-                예시 1: 해시 충돌 해결을 위해 체이닝(Linked List)을 사용하는 해시 테이블을 구현하시오.
-                예시 2: 이진 탐색 트리에서 노드 삽입과 탐색 알고리즘을 구현하시오.
-                """)
-            elif sub_category == "ALGORITHM":
-                example_texts.append("""
-                예시 1: 퀵 정렬 알고리즘의 분할 정복 방식을 설명하고, 시간 복잡도를 분석하며, 퀵 정렬의 성능을 개선하는 방법을 제시하시오.
-                예시 2: 선택 정렬 알고리즘의 동작 과정을 설명하고, 시간 복잡도와 공간 복잡도를 계산하시오.
-                """)
-            elif sub_category == "COMPUTER_ARCHITECTURE":
-                example_texts.append("""
-                예시 1: 파이프라인의 단계별 동작을 설명하고 간단한 명령어 흐름을 시뮬레이션하시오.
-                예시 2: 2진수 덧셈과 보수 연산을 사용하여 산술 연산을 수행하는 알고리즘을 구현하시오.
-                """)
-            elif sub_category == "NETWORK":
-                example_texts.append("""
-                예시 1: 라우팅 테이블의 동작 원리와 OSPF 프로토콜의 작동 방식을 설명하고, 기본적인 OSPF 설정 예시를 작성하시오.
-                예시 2: OSI 7계층 모델의 각 계층 역할을 간단히 설명하고, 해당 계층에서 사용하는 프로토콜(예: HTTP, TCP, IP)을 예시로 드시오.
-                """)
-            elif sub_category == "DATABASE":
-                example_texts.append("""
-                예시 1: B+ 트리 인덱스를 이용해 효율적인 데이터 검색 알고리즘을 설계하시오.
-                예시 2: 관계 대수의 기본 연산을 사용하여 간단한 SQL 쿼리를 관계 대수로 변환하시오.
-                """)
-            else:  # "OPERATING_SYSTEM"
-                example_texts.append("""
-                예시 1: 다단계 피드백 큐 스케줄링 알고리즘을 설계하고 시뮬레이션하시오.
-                예시 2: 페이징 기법에서 페이지 교체 알고리즘의 FIFO 방식을 구현하시오.
-                """)
-            prompt_descriptions.append("심화된 대학교 전공 수준의 개념 이해와 분석 능력을 테스트할 수 있는 미션")
-
-        elif sub_category in _language_categories:
-            category_mapping[sub_category] = "LANGUAGE"
-            if sub_category == "JAVA":
-                example_texts.append("""
-                예시 1: 자바 메모리 구조(스택과 힙)의 차이점을 설명하고, 가비지 컬렉션 방식 중 '마크-스윕'의 작동 원리를 이해할 수 있도록 예시를 제시하시오.
-                예시 2: 객체 지향 프로그래밍의 4가지 개념(캡슐화, 상속, 다형성, 추상화)을 각각 설명하시오.
-                """)
-            elif sub_category == "JAVASCRIPT":
-                example_texts.append("""
-                예시 1: JavaScript의 this 키워드가 다른 컨텍스트에서 어떻게 동작하는지 예제 코드를 작성하고 분석하시오.
-                예시 2: JavaScript에서 var, let, const의 차이를 설명하고 각 변수 선언 키워드의 예제 코드를 작성하시오.
-                """)
-            else:  # "PYTHON"
-                example_texts.append("""
-                예시 1: Python의 제너레이터와 이터레이터의 차이를 설명하고 제너레이터를 이용한 데이터 스트림 생성기를 작성하시오.
-                예시 2: Python의 리스트 내포(List Comprehension)를 사용하여 1부터 100까지의 짝수 리스트를 생성하는 코드를 작성하시오.
-                """)
-            prompt_descriptions.append("언어적 특성을 이해하고 사용하는 데 중점을 둔 미션")
-
-        elif sub_category in _tool_categories:
-            category_mapping[sub_category] = "TOOL"
-            if sub_category == "SPRING":
-                example_texts.append("""
-                예시 1: Spring MVC 패턴을 활용하여 간단한 CRUD 기능을 갖춘 게시판 애플리케이션을 설계하고 구현하시오.
-                예시 2: Spring Boot를 사용하여 간단한 REST API를 생성하고, 이를 통해 기본적인 GET/POST 요청을 처리하시오.
-                """)
-            elif sub_category == "REACT":
-                example_texts.append("""
-                예시 1: React에서 커스텀 Hook을 작성하여 데이터 페칭 로직을 재사용할 수 있도록 하시오.
-                예시 2: React 컴포넌트를 사용하여 단순한 버튼 클릭 카운터 애플리케이션을 작성하시오.
-                """)
-            elif sub_category == "PYTORCH":
-                example_texts.append("""
-                예시 1: PyTorch에서 CNN을 사용해 이미지 분류 모델을 구현하고, 학습 및 평가 과정을 설명하시오.
-                예시 2: PyTorch에서 텐서 기본 연산과 자동 미분 기능을 사용하여 간단한 수학적 계산을 수행하시오.
-                """)
-            else:  # "DOCKER"
-                example_texts.append("""
-                예시 1: Dockerfile을 작성하여 Python 애플리케이션을 컨테이너화하고 이미지를 빌드 및 실행하시오.
-                예시 2: Docker CLI를 사용하여 간단한 Nginx 컨테이너를 실행하고 로컬에서 접근하시오.
-                """)
-            prompt_descriptions.append("도구의 사용법과 주요 기능을 실습하는 미션.")
-
-    # 랜덤하게 하나의 카테고리 선택
-    selected_idx = random.randint(0, len(sub_categories) - 1)
-    selected_category = sub_categories[selected_idx]
-
-    prompt = {
-        "system": f"""
-        너는 개발자의 성장을 위한 일일 미션 생성기야.
-        사용자가 관심 있는 개발 분야는 {category_mapping[selected_category]}의 {selected_category}야.
-
-        [행동 지침]
-        - 미션은 반드시 {category_mapping[selected_category]}, {selected_category}와 관련된 주제여야 하며, 그 외 내용은 포함하지 않아.
-        - 예시는 단지 참고용일 뿐이야, 예시 내용에 너무 의존하거나 복사하지 마.
-        - 개념을 확인하고 이해를 테스트할 수 있는 미션을 중심으로 생성해.
-        - '미션:'과 같은 텍스트를 붙이지 말고 미션에 해당하는 텍스트만 생성해줘.
-
-        아래는 생성된 미션 예시야.
-        ------------------------
-        {example_texts[selected_idx]}
-        ------------------------
-        """,
-        "user": f"""
-        질문: {category_mapping[selected_category]} 안에 {selected_category}를 바탕으로 개발자를 위한 {prompt_descriptions[selected_idx]} 1개를 생성하시오.
-        답:
-        """
-    }
-
-    response = _client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": prompt['system']},
-            {"role": "user", "content": prompt['user']},
-        ],
-        max_tokens=100,
-        temperature=1.2,
-        top_p=0.95,
-        presence_penalty=0.1,
-        response_format={"type": "text"}
-    )
-
-    mission = response.choices[0].message.content
-
-    return mission
-
-
 def mission_generator_daily_langchain(sub_categories: list[str]):
+    """
+    데일리 미션 생성 함수
+    :param sub_categories: 유저가 선택한 카테고리들
+    :return: 미션 텍스트
+    """
     for category in sub_categories:
         if category not in _cs_categories + _language_categories + _tool_categories:
             raise ValueError(f"올바른 sub_category를 입력하세요. 잘못된 카테고리: {category}")
@@ -416,3 +292,5 @@ def mission_generator_free_langchain(sub_category: str):
 
     return missions
 
+def save_completed_missions(userId, title, date, missionType, category):
+    pass

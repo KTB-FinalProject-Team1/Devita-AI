@@ -1,17 +1,21 @@
+import os
+
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from api.interface.controllers.controller import router
 from containers import Container
 from model.llm import LLMManager
+from config import BACKEND_HOST, BACKEND_PORT
+
 
 app = FastAPI()
 app.container = Container()
 app.include_router(router=router)
 
+
 origins = [
-    "http://host.docker.internal:8080",
-    "http://10.0.4.148:8080",
+    f'http://{BACKEND_HOST}:{BACKEND_PORT}'
 ]
 
 app.add_middleware(
@@ -28,7 +32,7 @@ llm_manager.load_model()
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host=BACKEND_HOST,
         reload=True,
         timeout_keep_alive=60,
         log_level="debug"

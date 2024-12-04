@@ -1,7 +1,5 @@
 FROM python:3.11-slim
 
-ENV PYTHON_ENV=production
-
 # 작업 디렉토리 생성
 WORKDIR /app
 
