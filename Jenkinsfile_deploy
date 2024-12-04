@@ -3,11 +3,12 @@ pipeline {
 
     environment {
         ECR_REGISTRY = '860195224276.dkr.ecr.ap-northeast-2.amazonaws.com'
-        ECR_REPO_NAME = 'devita_ecr'
+        ECR_REPO_NAME = 'devita_deploy_ecr'
         IMAGE_TAG = 'latest_ai'
         AWS_REGION = 'ap-northeast-2'
         AWS_CREDENTIALS = credentials('AwsCredentials')
-        AWS_S3_BUCKET = 'devita-env'
+        INSTANCE_ID = 'i-04f25b7af191e6aeb'
+        AWS_S3_BUCKET = 'devita-deploy-env'
         S3_ENV_FILE = 'ai/.env'
         S3_ENV_PROD_FILE = 'ai/.env.prod'
         LOCAL_ENV_FILE = '.'
@@ -30,7 +31,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    git branch: 'develop', url: 'https://github.com/KTB-FinalProject-Team1/Devita-AI', credentialsId: "githubAccessToken"
+                    git branch: 'main', url: 'https://github.com/KTB-FinalProject-Team1/Devita-AI', credentialsId: "githubAccessToken"
                 }
             }
         }
@@ -77,7 +78,7 @@ pipeline {
         stage('Start EC2 Instance and Deploy') {
             steps {
                 script {
-                    build job: 'cd_pipeline_test'
+                    build job: 'cd_pipeline_deploy'
                 }
             }
         }
