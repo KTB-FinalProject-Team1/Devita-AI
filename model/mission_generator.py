@@ -315,9 +315,15 @@ def mission_generator_free_langchain(sub_category: str):
                     중간 난이도: B+ 트리 인덱스를 이용해 효율적인 데이터 검색 알고리즘을 설계하시오.
                     쉬운 난이도: 관계 대수의 기본 연산을 사용하여 간단한 SQL 쿼리를 관계 대수로 변환하시오.
                     """
+        elif sub_category == "DATA_STRUCTURE":
+            example_text = """
+                    높은 난이도: AVL 트리의 삽입과 삭제 과정을 구현하여 균형 상태를 유지하는 알고리즘을 작성하시오.
+                    중간 난이도: 해시 충돌 해결을 위해 체이닝(Linked List)을 사용하는 해시 테이블을 구현하시오.
+                    쉬운 난이도: 이진 탐색 트리에서 노드 삽입과 탐색 알고리즘을 구현하시오.
+                    """
         prompt_description = "심화된 대학교 전공 수준의 개념 이해와 분석 능력을 테스트할 수 있는 미션"
 
-    elif main_category == "language":
+    elif main_category == "LANGUAGE":
         if sub_category == "JAVA":
             example_text = """
                     높은 난이도: 멀티스레드 환경에서의 동기화 필요성을 설명하고, synchronized 키워드를 사용해 데이터 레이스 문제를 해결하는 방법을 분석하라.
@@ -338,7 +344,7 @@ def mission_generator_free_langchain(sub_category: str):
                     """
         prompt_description = "언어적 특성을 이해하고 사용하는 데 중점을 둔 미션"
 
-    elif main_category == "tool":
+    elif main_category == "TOOL":
         if sub_category == "SPRING":
             example_text = """
                     높은 난이도: Spring과 JPA를 사용하여 다중 테이블 간 연관 관계를 매핑하고, 복잡한 쿼리를 최적화하는 방법을 설명하라.
