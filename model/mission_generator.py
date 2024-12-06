@@ -2,6 +2,7 @@ import json
 import random
 from langchain.prompts import ChatPromptTemplate
 from model.llm import LLMManager
+from model.db import DB
 from langchain_community.document_loaders import TextLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
@@ -267,6 +268,7 @@ def mission_generator_free_langchain(sub_category: str):
         3. 예시는 참고용일 뿐이며, 예시 내용에 너무 의존하지 마세요.
         4. 미션 난이도는 높은 난이도, 중간 난이도, 쉬운 난이도 순으로 구분되며, 난이도 차이가 명확해야 합니다.
         5. 각 미션은 반드시 서로 다른 내용이어야 합니다.
+        6. '높은 난이도:'와 같은 텍스트를 붙이지 않아야 합니다.
 
         아래는 생성된 미션 예시입니다.
         ------------------------
@@ -298,5 +300,40 @@ def mission_generator_free_langchain(sub_category: str):
 
     return missions
 
-def save_completed_missions(userId, title, date, missionType, category):
-    pass
+
+def save_completed_missions(userId: str, title: str, completion_date: str, missionType: str, category: str):
+    """
+    완료된 미션을 저장하는 함수
+
+    Args:
+        userId (str): 사용자 ID
+        title (str): 미션 제목
+        completion_date (str): 완료 날짜
+        missionType (str): 미션 타입
+        category (str): 카테고리
+    """
+    try:
+        # ChromaDB 클라이언트 초기화
+        client = DB.get_instance().chroma_client
+
+        # 컬렉션 가져오기 또는 생성
+        collection = client.get_or_create_collection(name="completed_missions")
+
+        # 저장할 데이터 준비
+        document = {
+            "userId": userId,
+            "title": title,
+            "completion_date": completion_date,
+            "missionType": missionType,
+            "category": category
+        }
+
+        # ChromaDB에 저장
+        collection.add(
+            documents=[str(document)],
+            ids=[f"{userId}_{completion_date}"]
+        )
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+

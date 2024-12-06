@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 
 env = os.getenv('PYTHON_ENV', 'development')
-
+load_dotenv()
 if env == 'development':
     load_dotenv(".env.dev", override=True)
 elif env == 'production':
