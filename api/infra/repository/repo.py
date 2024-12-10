@@ -25,3 +25,13 @@ class Repository(IRepository):
                 Mission(level=2, missionTitle=res['mission_2']),
                 Mission(level=3, missionTitle=res['mission_3'])
         ]
+
+    def save_completed_mission(
+            self,
+            userId: int,
+            title: str,
+            completionDate: str,
+            missionType: str,
+            category: str
+    ):
+        pass

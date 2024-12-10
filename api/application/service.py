@@ -1,4 +1,3 @@
-from dependency_injector.wiring import inject
 from api.domain.repository.repo import IRepository
 
 
@@ -24,3 +23,13 @@ class Service:
     ) -> list[str]:
         missions = self.repo.autonomous(userId, subCategory)
         return missions
+
+    def save_completed_mission(
+            self,
+            userId: int,
+            title: str,
+            completionDate: str,
+            missionType: str,
+            category: str,
+    ):
+        pass
