@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 from api.interface.controllers.model.model import Mission
@@ -12,6 +14,7 @@ class DailyResponseDTO(BaseModel):
     # missions: list[Mission]
     missionTitle: str
 
+
 class AutonomousRequestDTO(BaseModel):
     userId: int
     subCategory: str
@@ -19,3 +22,11 @@ class AutonomousRequestDTO(BaseModel):
 
 class AutonomousResponseDTO(BaseModel):
     missions: list[Mission]
+
+
+class CompletedMissionRequestDTO(BaseModel):
+    userId: int
+    title: str
+    completion_date: date
+    missionType: str
+    category: str

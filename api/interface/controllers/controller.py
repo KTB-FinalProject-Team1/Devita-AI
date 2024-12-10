@@ -3,7 +3,7 @@ from api.application.service import Service
 from dependency_injector.wiring import inject, Provide
 
 from api.interface.controllers.dto.dto import DailyRequestDTO, DailyResponseDTO, AutonomousRequestDTO, \
-    AutonomousResponseDTO
+    AutonomousResponseDTO, CompletedMissionRequestDTO
 from api.interface.controllers.model.model import Mission
 from containers import Container
 
@@ -98,3 +98,13 @@ def autonomous(
 
     print(len(missions))
     return AutonomousResponseDTO(missions=missions)
+
+
+@router.post('/completed_mission')
+@inject
+def completed_mission(
+    req: CompletedMissionRequestDTO,
+    service: Service = Depends(Provide[Container.service])
+):
+    pass
+

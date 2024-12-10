@@ -301,7 +301,7 @@ def mission_generator_free_langchain(sub_category: str):
     return missions
 
 
-def save_completed_missions(userId: str, title: str, completion_date: str, missionType: str, category: str):
+def save_completed_missions(userId: int, title: str, completion_date: str, missionType: str, category: str):
     """
     완료된 미션을 저장하는 함수
 
@@ -317,7 +317,7 @@ def save_completed_missions(userId: str, title: str, completion_date: str, missi
         client = DB.get_instance().chroma_client
 
         # 컬렉션 가져오기 또는 생성
-        collection = client.get_or_create_collection(name="completed_missions")
+        collection = client.get_or_create_collection(name="no_dup")
 
         # 저장할 데이터 준비
         document = {
