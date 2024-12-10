@@ -301,14 +301,14 @@ def mission_generator_free_langchain(sub_category: str):
     return missions
 
 
-def save_completed_missions(userId: int, title: str, completion_date: str, missionType: str, category: str):
+def save_completed_mission(userId: int, title: str, completion_date: str, missionType: str, category: str):
     """
     완료된 미션을 저장하는 함수
 
     Args:
         userId (str): 사용자 ID
         title (str): 미션 제목
-        completion_date (str): 완료 날짜
+        completionDate (str): 완료 날짜
         missionType (str): 미션 타입
         category (str): 카테고리
     """
@@ -323,7 +323,7 @@ def save_completed_missions(userId: int, title: str, completion_date: str, missi
         document = {
             "userId": userId,
             "title": title,
-            "completion_date": completion_date,
+            "completionDate": completion_date,
             "missionType": missionType,
             "category": category
         }

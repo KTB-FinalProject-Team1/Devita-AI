@@ -30,3 +30,7 @@ class CompletedMissionRequestDTO(BaseModel):
     completionDate: str
     missionType: str
     category: str
+
+
+class CompletedMissionResponseDTO(BaseModel):
+    message: str

@@ -27,5 +27,5 @@ class IRepository(metaclass=ABCMeta):
             completionDate: str,
             missionType: str,
             category: str
-    ):
+    ) -> int:
         raise NotImplementedError

@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends
+from http import HTTPStatus
+
+from fastapi import APIRouter, Depends, Response
 from api.application.service import Service
 from dependency_injector.wiring import inject, Provide
 
 from api.interface.controllers.dto.dto import DailyRequestDTO, DailyResponseDTO, AutonomousRequestDTO, \
-    AutonomousResponseDTO, CompletedMissionRequestDTO
+    AutonomousResponseDTO, CompletedMissionRequestDTO, CompletedMissionResponseDTO
 from api.interface.controllers.model.model import Mission
 from containers import Container
 
@@ -103,8 +105,24 @@ def autonomous(
 @router.post('/completed_mission')
 @inject
 def completed_mission(
-    req: CompletedMissionRequestDTO,
-    service: Service = Depends(Provide[Container.service])
+        req: CompletedMissionRequestDTO,
+        response: Response,
+        service: Service = Depends(Provide[Container.service])
 ):
-    pass
+    userId, title, completionDate, missionType, category = req
+    http_code = service.save_completed_mission(
+        userId=userId,
+        title=title,
+        completionDate=completionDate,
+        missionType=missionType,
+        category=category
+    )
 
+    if http_code == HTTPStatus.OK:
+        response.status_code = HTTPStatus.OK
+        message = ""
+    elif http_code == HTTPStatus.NOT_FOUND:
+        response.status_code = HTTPStatus.NOT_FOUND
+        message = "유저 정보가 없습니다."
+
+    return CompletedMissionResponseDTO(message=message)
