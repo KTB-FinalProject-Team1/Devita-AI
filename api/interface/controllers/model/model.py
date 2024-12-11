@@ -1,6 +1,8 @@
 from pydantic import BaseModel
+from dataclasses import dataclass
 
 
-class Mission(BaseModel):
+@dataclass
+class Mission:
     level: int
     missionTitle: str

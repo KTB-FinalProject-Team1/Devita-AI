@@ -3,7 +3,7 @@ from model.llm import LLMManager
 from api.interface.controllers.model.model import Mission
 import json
 
-from model.mission_generator import mission_generator_free_langchain, mission_generator_daily_langchain
+from model.mission_generator import mission_generator_free_langchain, mission_generator_daily_langchain, save_completed_mission
 
 
 class Repository(IRepository):
@@ -25,3 +25,13 @@ class Repository(IRepository):
                 Mission(level=2, missionTitle=res['mission_2']),
                 Mission(level=3, missionTitle=res['mission_3'])
         ]
+
+    def save_completed_mission(
+            self,
+            userId: int,
+            title: str,
+            date: str,
+            missionType: str,
+            category: str
+    ) -> int:
+        save_completed_mission(userId, title, date, missionType, category)

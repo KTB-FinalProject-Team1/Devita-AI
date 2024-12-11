@@ -1,13 +1,17 @@
-from fastapi import APIRouter, Depends
+from http import HTTPStatus
+
+from fastapi import APIRouter, Depends, Response
 from api.application.service import Service
 from dependency_injector.wiring import inject, Provide
-
+import logging
 from api.interface.controllers.dto.dto import DailyRequestDTO, DailyResponseDTO, AutonomousRequestDTO, \
-    AutonomousResponseDTO
-from api.interface.controllers.model.model import Mission
+    AutonomousResponseDTO, CompletedMissionRequestDTO
 from containers import Container
 
 router = APIRouter(prefix='/ai/v1/mission')
+
+
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -98,3 +102,30 @@ def autonomous(
 
     print(len(missions))
     return AutonomousResponseDTO(missions=missions)
+
+
+@router.post('/save', status_code=HTTPStatus.CREATED)
+@inject
+def completed_mission(
+        req: CompletedMissionRequestDTO,
+        response: Response,
+        service: Service = Depends(Provide[Container.service])
+):
+    try:
+        userId = req.userId
+        title = req.title
+        date = req.date
+        missionType = req.missionType
+        category = req.category
+
+        service.save_completed_mission(
+            userId=userId,
+            title=title,
+            date=date,
+            missionType=missionType,
+            category=category
+        )
+    except Exception as e:
+        logger.error(e)
+
+    return None

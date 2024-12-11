@@ -18,3 +18,14 @@ class IRepository(metaclass=ABCMeta):
             subCategory: str
     ) -> list[Mission]:
         raise NotImplementedError
+
+    @abstractmethod
+    def save_completed_mission(
+            self,
+            userId: int,
+            title: str,
+            date: str,
+            missionType: str,
+            category: str
+    ) -> int:
+        raise NotImplementedError
