@@ -28,9 +28,9 @@ class Service:
             self,
             userId: int,
             title: str,
-            completionDate: str,
+            date: str,
             missionType: str,
             category: str,
     ) -> int:
-        http_code = self.repo.save_completed_mission(userId, title, completionDate, missionType, category)
+        http_code = self.repo.save_completed_mission(userId, title, date, missionType, category)
         return http_code

@@ -24,7 +24,7 @@ class IRepository(metaclass=ABCMeta):
             self,
             userId: int,
             title: str,
-            completionDate: str,
+            date: str,
             missionType: str,
             category: str
     ) -> int:

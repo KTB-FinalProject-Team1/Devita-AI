@@ -7,6 +7,7 @@ from api.interface.controllers.controller import router
 from containers import Container
 from model.llm import LLMManager
 from config import BACKEND_HOST, BACKEND_PORT
+from model.db import DB
 
 
 app = FastAPI()
@@ -28,6 +29,10 @@ app.add_middleware(
 
 llm_manager = LLMManager.get_instance()
 llm_manager.load_model()
+
+db = DB.get_instance()
+db.load_db()
+
 
 if __name__ == "__main__":
     uvicorn.run(

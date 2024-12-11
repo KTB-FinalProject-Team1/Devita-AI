@@ -3,13 +3,15 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, Response
 from api.application.service import Service
 from dependency_injector.wiring import inject, Provide
-
+import logging
 from api.interface.controllers.dto.dto import DailyRequestDTO, DailyResponseDTO, AutonomousRequestDTO, \
-    AutonomousResponseDTO, CompletedMissionRequestDTO, CompletedMissionResponseDTO
-from api.interface.controllers.model.model import Mission
+    AutonomousResponseDTO, CompletedMissionRequestDTO
 from containers import Container
 
 router = APIRouter(prefix='/ai/v1/mission')
+
+
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -102,27 +104,28 @@ def autonomous(
     return AutonomousResponseDTO(missions=missions)
 
 
-@router.post('/completed_mission')
+@router.post('/save', status_code=HTTPStatus.CREATED)
 @inject
 def completed_mission(
         req: CompletedMissionRequestDTO,
         response: Response,
         service: Service = Depends(Provide[Container.service])
 ):
-    userId, title, completionDate, missionType, category = req
-    http_code = service.save_completed_mission(
-        userId=userId,
-        title=title,
-        completionDate=completionDate,
-        missionType=missionType,
-        category=category
-    )
+    try:
+        userId = req.userId
+        title = req.title
+        date = req.date
+        missionType = req.missionType
+        category = req.category
 
-    if http_code == HTTPStatus.OK:
-        response.status_code = HTTPStatus.OK
-        message = ""
-    elif http_code == HTTPStatus.NOT_FOUND:
-        response.status_code = HTTPStatus.NOT_FOUND
-        message = "유저 정보가 없습니다."
+        service.save_completed_mission(
+            userId=userId,
+            title=title,
+            date=date,
+            missionType=missionType,
+            category=category
+        )
+    except Exception as e:
+        logger.error(e)
 
-    return CompletedMissionResponseDTO(message=message)
+    return None

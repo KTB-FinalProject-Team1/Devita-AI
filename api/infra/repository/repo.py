@@ -30,9 +30,8 @@ class Repository(IRepository):
             self,
             userId: int,
             title: str,
-            completionDate: str,
+            date: str,
             missionType: str,
             category: str
     ) -> int:
-        http_code = save_completed_mission(userId, title, completionDate, missionType, category)
-        return http_code
+        save_completed_mission(userId, title, date, missionType, category)

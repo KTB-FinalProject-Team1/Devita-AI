@@ -1,18 +1,25 @@
 import json
 import random
+import traceback
+import logging
 from langchain.prompts import ChatPromptTemplate
 from model.llm import LLMManager
 from model.db import DB
-from langchain_community.document_loaders import TextLoader
-from langchain_openai import OpenAIEmbeddings
-from langchain_text_splitters import CharacterTextSplitter
-from langchain_chroma import Chroma
+from langchain_core.documents import Document
+from datetime import datetime
+
+
+logging.basicConfig(format='%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 _cs_categories = ("DATA_STRUCTURE", "ALGORITHM", "COMPUTER_ARCHITECTURE", "NETWORK", "OPERATING_SYSTEM",
                   "DATABASE")
 _language_categories = ("JAVA", "JAVASCRIPT", "PYTHON")
 _tool_categories = ("SPRING", "REACT", "PYTORCH", "DOCKER")
+
 
 def mission_generator_daily_langchain(sub_categories: list[str]):
     """
@@ -301,39 +308,53 @@ def mission_generator_free_langchain(sub_category: str):
     return missions
 
 
-def save_completed_mission(userId: int, title: str, completion_date: str, missionType: str, category: str):
+def save_completed_mission(userId: int, title: str, date: str, missionType: str, category: str):
     """
     완료된 미션을 저장하는 함수
 
     Args:
         userId (str): 사용자 ID
         title (str): 미션 제목
-        completionDate (str): 완료 날짜
+        date (str): 완료 날짜
         missionType (str): 미션 타입
         category (str): 카테고리
     """
     try:
-        # ChromaDB 클라이언트 초기화
-        client = DB.get_instance().chroma_client
-
-        # 컬렉션 가져오기 또는 생성
-        collection = client.get_or_create_collection(name="no_dup")
-
-        # 저장할 데이터 준비
-        document = {
-            "userId": userId,
-            "title": title,
-            "completionDate": completion_date,
-            "missionType": missionType,
-            "category": category
-        }
-
-        # ChromaDB에 저장
-        collection.add(
-            documents=[str(document)],
-            ids=[f"{userId}_{completion_date}"]
+        no_dup_vectorstore = DB.get_instance().no_dup_vectorstore
+        document = Document(
+            page_content=title,
+            metadata={
+                "userId": userId,
+                "completionDate": date,
+                "missionType": missionType,
+                "category": category,
+                "createdAt": datetime.now().isoformat()
+            }
         )
 
+        # uuid = [str(uuid4())]
+        no_dup_vectorstore.add_documents(documents=[document])
+        logger.info(f"Mission saved successfully for user {userId}: {title}")
+
+        return True
+
+    except ValueError as ve:
+        # 입력값 관련 에러 처리
+        logger.error(f"Validation Error in save_completed_mission: {str(ve)}")
+        logger.error(f"Function inputs - userId: {userId}, title: {title}, date: {date}, "
+                     f"missionType: {missionType}, category: {category}")
+
+        return False
+
     except Exception as e:
-        print(f"Error: {str(e)}")
+        # 상세한 에러 정보 로깅
+        error_info = traceback.format_exc()
+        logger.error("Unexpected error in save_completed_mission:")
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error message: {str(e)}")
+        logger.error(f"Stack trace:\n{error_info}")
+        logger.error(f"Function inputs - userId: {userId}, title: {title}, date: {date}, "
+                     f"missionType: {missionType}, category: {category}")
+
+        return None
 
