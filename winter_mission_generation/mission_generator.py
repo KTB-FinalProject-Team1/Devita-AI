@@ -105,8 +105,12 @@ class MissionGeneratorChain(Chain):
         except Exception as e:
             print(f"토픽 검색 중 오류 발생: {e}")
         return None
-
+    
     def _call(self, inputs: Dict[str, str]) -> Dict[str, List[Dict]]:
+        """Chain 추상 메서드 구현"""
+        return self.invoke(inputs)
+
+    def invoke(self, inputs: Dict[str, str], return_only_outputs: bool = False) -> Dict[str, List[Dict]]:
         """각 난이도별 토픽 검색 실행"""
         missions = []
         for difficulty in self.difficulty_levels:
@@ -115,7 +119,7 @@ class MissionGeneratorChain(Chain):
                 missions.append({
                     "topic": topic_data["topic"],
                     "description": topic_data["description"],
-                    "difficulty": difficulty
+                    "difficulty": difficulty,
                 })
         return {"missions": missions}
 
@@ -124,6 +128,34 @@ class MissionGenerator:
     
     def __init__(self, base_dir: str = "data_store"):
         load_dotenv()
+        
+        # 카테고리별 예시와 설명 정의
+        self.category_examples = {
+            "CS": {
+                "description": "심화된 전공 수준의 개념 이해와 분석 능력을 테스트할 수 있는 미션",
+                "examples": """
+                Advanced: 멀티스레드 환경에서 데드락 감지 및 회복 알고리즘 구현하기
+                Intermediate: LRU 캐시 구현으로 데이터베이스 조회 성능 최적화하기
+                Beginner: 스택과 큐를 활용한 기본 자료구조 구현하기
+                """
+            },
+            "LANGUAGE": {
+                "description": "프로그래밍 언어의 특성을 이해하고 활용하는 미션",
+                "examples": """
+                Advanced: 커스텀 어노테이션 프로세서를 활용한 메타프로그래밍 구현하기
+                Intermediate: 제네릭을 활용한 타입 안전성 보장 컬렉션 만들기
+                Beginner: 인터페이스를 활용한 간단한 플러그인 시스템 구현하기
+                """
+            },
+            "TOOL": {
+                "description": "개발 도구의 핵심 기능을 실무적으로 활용하는 미션",
+                "examples": """
+                Advanced: 마이크로서비스 아키텍처에서 서비스 디스커버리 구현하기
+                Intermediate: OAuth2.0 기반 소셜 로그인 시스템 구축하기
+                Beginner: REST API 기반 CRUD 서비스 개발하기
+                """
+            }
+        }
         
         self.db_dir = Path(base_dir) / "chromadb"
         self.db_dir.mkdir(parents=True, exist_ok=True)
@@ -147,8 +179,8 @@ class MissionGenerator:
             )
         
         self.llm = ChatOpenAI(
-            model="gpt-4",
-            temperature=1.0
+            model="gpt-4o-mini",
+            temperature=1.2
         )
         
         self._setup_chains()
@@ -161,14 +193,30 @@ class MissionGenerator:
         )
         
         self.mission_prompt = ChatPromptTemplate.from_template("""
-        주어진 토픽에 대해 간단한 미션 제목만 생성해주세요.
+        당신은 개발자를 위한 미션 생성기입니다.
+        주어진 토픽과 설명을 바탕으로 개발자의 실무 역량을 향상시킬 수 있는 미션을 생성해주세요.
 
         토픽: {topic}
         설명: {description}
         난이도: {difficulty}
+        분야: {category_description}
 
-        실무에서 실제로 마주할 수 있는 현실적인 미션 제목을 한 줄로 작성해주세요.
-        예시 형식: "사용자 인증 시스템 구현하기" 또는 "데이터 캐싱 시스템 개발"처럼 간단명료하게 작성해주세요.
+        [행동 지침]
+        1. 미션 제목만 출력합니다. 설명이나 추가 내용은 포함하지 않습니다.
+        2. 미션은 반드시 주어진 토픽과 직접적으로 관련되어야 합니다.
+        3. 실무에서 실제로 마주할 수 있는 현실적인 미션이어야 합니다.
+        4. 난이도에 따른 미션의 깊이:
+            * Advanced: 개념의 심화 응용이 필요한 수준 (아키텍처 설계, 성능 최적화 등)
+            * Intermediate: 개념의 작동 원리를 이해하고 구현하는 수준
+            * Beginner: 기본 개념을 올바르게 사용할 수 있는 수준
+        5. 미션 제목은 "~하기", "~구현하기", "~개발하기"와 같은 동사형으로 끝나야 합니다.
+        6. 예시는 단지 참고용일 뿐이므로, 예시 내용에 너무 의존하거나 복사하지 마세요.
+        
+        관련 예시:
+        {category_examples}
+
+        위 지침에 따라 한 줄의 미션 제목만 생성해주세요.
+        
         """)
         
         self.generation_chain = LLMChain(
@@ -179,9 +227,18 @@ class MissionGenerator:
     def generate_missions(self, language: str) -> Dict:
         """미션 생성 실행"""
         try:
-            topics_result = self.retriever_chain({"language": language})
+            # 언어 카테고리 결정
+            if language in ["Java", "Python", "JavaScript"]:
+                category = "LANGUAGE"
+            elif language in ["Spring", "React", "Docker"]:
+                category = "TOOL"
+            else:
+                category = "CS"
+
+            topics_result = self.retriever_chain.invoke({"language": language})
+        
             if not topics_result or "missions" not in topics_result:
-               raise ValueError("토픽 검색 결과가 없습니다.")
+                raise ValueError("토픽 검색 결과가 없습니다.")
 
             generated_missions = []
             for mission_data in topics_result["missions"]:
@@ -189,7 +246,9 @@ class MissionGenerator:
                     result = self.generation_chain.invoke({
                         "topic": mission_data["topic"],
                         "description": mission_data["description"],
-                        "difficulty": mission_data["difficulty"]
+                        "difficulty": mission_data["difficulty"],
+                        "category_description": self.category_examples[category]["description"],
+                        "category_examples": self.category_examples[category]["examples"]
                     })
                 
                     generated_missions.append({
@@ -238,8 +297,8 @@ def main():
             
             print(f"\n{language} 미션을 생성하는 중...")
             
-            # 토픽 선택 및 로깅
-            topics_result = mission_gen.retriever_chain({"language": language})
+            # 토픽 선택 및 로깅 # invoke로 수정
+            topics_result = mission_gen.retriever_chain.invoke({"language": language})
             
             if topics_result and "missions" in topics_result:
                 print("\n=== 선택된 토픽 정보 ===")
