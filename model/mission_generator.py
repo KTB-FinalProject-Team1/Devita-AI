@@ -7,6 +7,7 @@ from model.llm import LLMManager
 from model.db import DB
 from langchain_core.documents import Document
 from datetime import datetime
+from model.ai_output_validator import AIOutputValidator, generate_with_duplicate_prevention
 
 
 logging.basicConfig(format='%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
@@ -20,6 +21,9 @@ _cs_categories = ("DATA_STRUCTURE", "ALGORITHM", "COMPUTER_ARCHITECTURE", "NETWO
 _language_categories = ("JAVA", "JAVASCRIPT", "PYTHON")
 _tool_categories = ("SPRING", "REACT", "PYTORCH", "DOCKER")
 
+
+# TODO: save_completed_mission()에서 잘못된 카테고리를 입력하면 오류를 반환하게 함
+# TODO: 메타데이터를 사용하여 유저 아이디가 동일한 것에 대해서만 중복 방지를 하게 함
 
 def mission_generator_daily_langchain(sub_categories: list[str]):
     """
@@ -151,7 +155,8 @@ def mission_generator_daily_langchain(sub_categories: list[str]):
     )
 
     llm = LLMManager.get_instance().get_client()
-    mission = llm.invoke(messages).content
+    # mission = llm.invoke(messages).content
+    mission = generate_with_duplicate_prevention(messages, llm.invoke, AIOutputValidator(mission_type="daily"))
 
     return mission
 
@@ -295,6 +300,8 @@ def mission_generator_free_langchain(sub_category: str):
         """)
         ]
     )
+
+
     messages = chat_template.format_messages(
         main_category=main_category,
         sub_category=sub_category,

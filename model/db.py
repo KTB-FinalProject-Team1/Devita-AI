@@ -3,8 +3,9 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 import chromadb
 from chromadb.config import Settings
-from config import DATABASE_HOST, DATABASE_PORT
+from config import DATABASE_HOST, DATABASE_PORT, OPENAI_API_KEY
 import logging
+import chromadb.utils.embedding_functions as embedding_functions
 
 
 logger = logging.getLogger(__name__)
@@ -41,30 +42,32 @@ class DB:
                     settings=self.client_settings
                 )
 
-                self.embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
                 self.text_splitter = RecursiveCharacterTextSplitter(
                     chunk_size=512,
                     chunk_overlap=200,
                     length_function=len
                 )
 
-                self.no_dup_collection = self._chroma_client.get_or_create_collection("no_dup")
-                self.roadmap_collection = self._chroma_client.get_or_create_collection("roadmap")
+                ef = OpenAIEmbeddings(
+                    openai_api_key=OPENAI_API_KEY,
+                    model="text-embedding-3-large",
+                    dimensions=1536
+                )
 
                 # 중복 미션 생성 방지 컬렉션
-                self.no_dup_vectorstore = self._initialize_vectorstore(collection_name="no_dup", embeddings=self.embeddings)
+                self.no_dup_vectorstore = self._initialize_vectorstore(collection_name="no_dup", embedding_function=ef)
                 # 선행, 후속 미션 생성을 위한 컬렉션
-                self.roadmap_vectorstore = self._initialize_vectorstore(collection_name="roadmap", embeddings=self.embeddings)
+                self.roadmap_vectorstore = self._initialize_vectorstore(collection_name="roadmap", embedding_function=ef)
 
             except Exception as e:
                 logger.error(f"Error loading model: {str(e)}")
                 raise
 
-    def _initialize_vectorstore(self, collection_name, embeddings) -> Chroma:
+    def _initialize_vectorstore(self, collection_name, embedding_function) -> Chroma:
         return Chroma(
             client=self._chroma_client,
             collection_name=collection_name,
-            embedding_function=embeddings
+            embedding_function=embedding_function
         )
 
 

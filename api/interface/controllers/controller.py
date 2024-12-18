@@ -108,7 +108,6 @@ def autonomous(
 @inject
 def completed_mission(
         req: CompletedMissionRequestDTO,
-        response: Response,
         service: Service = Depends(Provide[Container.service])
 ):
     try:
