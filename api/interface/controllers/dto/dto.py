@@ -27,7 +27,7 @@ class AutonomousResponseDTO(BaseModel):
 class CompletedMissionRequestDTO(BaseModel):
     userId: int
     title: str
-    date: str
+    date: date
     missionType: str
     missionCategory: str
 
