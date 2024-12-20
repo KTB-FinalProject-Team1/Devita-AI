@@ -1,10 +1,4 @@
-import numpy as np
-from scipy.spatial.distance import cosine
-import chromadb
-from chromadb.utils import embedding_functions
-from datetime import datetime
 from typing import List, Dict, Union
-import json
 from model.db import DB
 
 
