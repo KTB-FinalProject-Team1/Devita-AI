@@ -115,7 +115,7 @@ def completed_mission(
         title = req.title
         date = req.date
         missionType = req.missionType
-        category = req.category
+        category = req.missionCategory
 
         service.save_completed_mission(
             userId=userId,

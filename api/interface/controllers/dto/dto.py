@@ -29,5 +29,5 @@ class CompletedMissionRequestDTO(BaseModel):
     title: str
     date: str
     missionType: str
-    category: str
+    missionCategory: str
 
