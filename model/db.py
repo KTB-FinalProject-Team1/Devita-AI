@@ -33,12 +33,12 @@ class DB:
                 self.client_settings = Settings(
                     chroma_api_impl="rest",
                     chroma_server_host=DATABASE_HOST,
-                    chroma_server_http_port=DATABASE_PORT
+                    chroma_server_http_port=int(DATABASE_PORT)
                 )
 
                 self._chroma_client = chromadb.HttpClient(
                     host=DATABASE_HOST,
-                    port=DATABASE_PORT,
+                    port=int(DATABASE_PORT),
                     settings=self.client_settings
                 )
 
