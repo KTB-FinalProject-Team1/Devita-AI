@@ -36,7 +36,11 @@ class DB:
                 )
 
                 # Initialize ChromaDB client
-                self._chroma_client = chromadb.HttpClient(settings=self.client_settings)
+                self._chroma_client = chromadb.HttpClient(
+                    host=DATABASE_HOST,
+                    port=8001,
+                    settings=self.client_settings
+                )
 
                 # Log successful initialization
                 logger.info(f"ChromaDB Client connected to {DATABASE_HOST}:{DATABASE_PORT}")
