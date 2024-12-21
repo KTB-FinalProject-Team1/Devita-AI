@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 # Load environment
-env = os.getenv('PYTHON_ENV')
+env = os.getenv('PYTHON_ENV', 'production')  # 기본값을 'production'으로 설정
 if not env:
     raise ValueError("Missing required environment variable: PYTHON_ENV")
 
